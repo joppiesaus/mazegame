@@ -3,7 +3,25 @@ var Game = function(args)
     var WallHeight = 10;
 
     this.hacks = false;
-    this.player = { position: new THREE.Vector3( 0, 0, 3 ), theta: 0, phi: 0 };
+    this.player = { position: new THREE.Vector3( -1.5, 0, 1 ), theta: Math.PI * 1.5, phi: 0 };
+
+    var light = new THREE.AmbientLight( 0x909090 );
+    scene.add( light );
+
+    this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
+    scene.add( this.player.light );
+
+    this.player.update = function()
+    {
+        this.light.position.set( this.position.x, this.position.y, this.position.z );
+        camera.position.set( this.position.x, this.position.y, this.position.z );
+        camera.rotation.y = this.theta;
+        camera.rotation.x = this.phi;
+    };
+
+    this.player.update();
+
+    var wallBumpMap = THREE.ImageUtils.loadTexture( "res/bump.png"/*"res/bumpmapwall.JPG"*/, null, function(){}, function(){} );
 
     var maze = generateMaze( args.width, args.height );
 
@@ -12,7 +30,12 @@ var Game = function(args)
     var generateCube = function( x, y )
     {
         var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+        var material = new THREE.MeshPhongMaterial( {
+            color: 0xaaaaaa,
+            bumpMap: wallBumpMap,
+            bumpScale: 0.55,
+            shininess: 12,
+        } );
         var cube = new THREE.Mesh( geometry, material );
         cube.position.set( x, 0, y );
         scene.add( cube );
@@ -53,7 +76,7 @@ var Game = function(args)
 
 Game.prototype.playerCollides = function( dir, amount )
 {
-    var ray = new THREE.Raycaster( this.player.position, dir, 0, amount + 0.1 );
+    var ray = new THREE.Raycaster( this.player.position, dir, 0, amount + 0.14 );
 
     // TODO: Fix
     var colliders = ray.intersectObjects( scene.children, false );
@@ -141,11 +164,7 @@ Game.prototype.update = function( delta )
         this.player.position.z -= xProd.z * MoveSpeed;
     }
 
-
-
-    camera.position.set( this.player.position.x, this.player.position.y, this.player.position.z );
-    camera.rotation.y = this.player.theta;
-    camera.rotation.x = this.player.phi;
+    this.player.update();
 
     InputManager.update();
 };
