@@ -78,7 +78,6 @@ Game.prototype.playerCollides = function( dir, amount )
 {
     var ray = new THREE.Raycaster( this.player.position, dir, 0, amount + 0.14 );
 
-    // TODO: Fix
     var colliders = ray.intersectObjects( scene.children, false );
 
     return (colliders.length > 0 && colliders[0].distance - 0.5 < amount);
@@ -129,39 +128,39 @@ Game.prototype.update = function( delta )
     var cTheta = Math.cos( this.player.theta );
     var sTheta = Math.sin( this.player.theta );
 
-    var dir = new THREE.Vector3( 1.0 * sTheta, 0, 1.0 * cTheta );
+    var dir = new THREE.Vector3( -1.0 * sTheta, 0, -1.0 * cTheta );
 
     if ( InputManager.isKeyDown( 87 /*w*/ ) &&
          !this.playerCollides( dir, MoveSpeed ))
     {
         // Move forward
-        this.player.position.x -= dir.x * MoveSpeed;
-        this.player.position.z -= dir.z * MoveSpeed;
+        this.player.position.x += dir.x * MoveSpeed;
+        this.player.position.z += dir.z * MoveSpeed;
     }
     else if ( InputManager.isKeyDown( 83 /*s*/ ) &&
          !this.playerCollides( new THREE.Vector3( -dir.x, -dir.y, -dir.z ), MoveSpeed ))
     {
         // Move backward
-        this.player.position.x += dir.x * MoveSpeed;
-        this.player.position.z += dir.z * MoveSpeed;
+        this.player.position.x -= dir.x * MoveSpeed;
+        this.player.position.z -= dir.z * MoveSpeed;
     }
 
     var xProd = new THREE.Vector3();
     xProd.crossVectors( dir, new THREE.Vector3( 0, 1.0, 0 ) );
 
     if ( InputManager.isKeyDown( 65 /*a*/ ) &&
-         !this.playerCollides( xProd, MoveSpeed ) )
+         !this.playerCollides(  new THREE.Vector3( -xProd.x, -xProd.y, -xProd.z ), MoveSpeed ) )
     {
         // Move left
-        this.player.position.x += xProd.x * MoveSpeed;
-        this.player.position.z += xProd.z * MoveSpeed;
-    }
-    else if ( InputManager.isKeyDown( 68 /*d*/ ) &&
-              !this.playerCollides( new THREE.Vector3( -xProd.x, -xProd.y, -xProd.z ), MoveSpeed ) )
-    {
-        // Move right
         this.player.position.x -= xProd.x * MoveSpeed;
         this.player.position.z -= xProd.z * MoveSpeed;
+    }
+    else if ( InputManager.isKeyDown( 68 /*d*/ ) &&
+              !this.playerCollides( xProd, MoveSpeed ) )
+    {
+        // Move right
+        this.player.position.x += xProd.x * MoveSpeed;
+        this.player.position.z += xProd.z * MoveSpeed;
     }
 
     this.player.update();
