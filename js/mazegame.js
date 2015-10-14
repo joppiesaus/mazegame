@@ -22,23 +22,27 @@ var Game = function(args)
     var maze = generateMaze( args.width, args.height );
     var mazeWalls = [];
 
+    var CubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var CubeMaterial = new THREE.MeshPhongMaterial( {
+        color: 0xaaaaaa,
+        bumpMap: Asset.texture( "bump.png" ),
+        bumpScale: 0.55,
+        shininess: 12,
+    } );
+    var CubeMesh = new THREE.Mesh( CubeGeometry, CubeMaterial );
+
     // TODO: Make pretty cubes.
     // I mean walls. With textures and bump maps, and lighting and such.
     var generateCube = function( x, y )
     {
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshPhongMaterial( {
-            color: 0xaaaaaa,
-            bumpMap: Asset.texture( "bump.png" ),
-            bumpScale: 0.55,
-            shininess: 12,
-        } );
-        var cube = new THREE.Mesh( geometry, material );
+        var cube = CubeMesh.clone();
         cube.position.set( x, 0, y );
 
         mazeWalls.push( cube );
         scene.add( cube );
     };
+
+    TorchBuilder.init();
 
     // Gaps
     var walls = [];

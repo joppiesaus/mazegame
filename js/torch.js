@@ -1,7 +1,22 @@
+var TorchBuilder =
+{
+    mesh: null,
+    light: null,
+
+    init: function()
+    {
+        var geometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
+        var material = new THREE.MeshNormalMaterial();
+
+        this.mesh = new THREE.Mesh( geometry, material );
+        this.light = new THREE.PointLight( 0xFF6600, 1, 3 );
+    },
+};
+
 // A torch!
 var Torch = function( x, y, z, angle )
 {
-    // Too much hard-coded.
+    // Too much hard-coded. It depends on the cube sizes, too.
     var geometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
     var material = new THREE.MeshNormalMaterial();
 
@@ -18,12 +33,12 @@ var Torch = function( x, y, z, angle )
     torchPos.add( realPos );
     lightPos.add( realPos );
 
-    this.torch = new THREE.Mesh( geometry, material );
+    this.torch = TorchBuilder.mesh.clone();
     this.torch.position.copy( torchPos );
     this.torch.rotation.setFromVector3( rotationVec );
     scene.add( this.torch );
 
-    this.light = new THREE.PointLight( 0xFF6600, 1, 3 );
+    this.light = TorchBuilder.light.clone();
     this.light.position.copy( lightPos );
     scene.add( this.light );
 
