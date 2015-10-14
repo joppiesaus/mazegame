@@ -1,7 +1,5 @@
 var Game = function(args)
 {
-    var WallHeight = 10;
-
     this.hacks = false;
     this.player = { position: new THREE.Vector3( -1.5, 0, 1 ), theta: Math.PI * 1.5, phi: 0 };
 
@@ -21,9 +19,8 @@ var Game = function(args)
 
     this.player.update();
 
-    var wallBumpMap = THREE.ImageUtils.loadTexture( "res/bump.png"/*"res/bumpmapwall.JPG"*/, null, function(){}, function(){} );
-
     var maze = generateMaze( args.width, args.height );
+    var mazeWalls = [];
 
     // TODO: Make pretty cubes.
     // I mean walls. With textures and bump maps, and lighting and such.
@@ -32,12 +29,14 @@ var Game = function(args)
         var geometry = new THREE.BoxGeometry( 1, 1, 1 );
         var material = new THREE.MeshPhongMaterial( {
             color: 0xaaaaaa,
-            bumpMap: wallBumpMap,
+            bumpMap: Asset.texture( "bump.png" ),
             bumpScale: 0.55,
             shininess: 12,
         } );
         var cube = new THREE.Mesh( geometry, material );
         cube.position.set( x, 0, y );
+
+        mazeWalls.push( cube );
         scene.add( cube );
     };
 
@@ -67,18 +66,41 @@ var Game = function(args)
 
     for ( var x = 0; x < walls.length; x++ )
     {
-        for ( var y = 0; y < walls[x].length; y++ )
+        for ( var y = 0; y < walls[ x ].length; y++ )
         {
-            if ( walls[x][y] ) generateCube( x, y );
+            if ( walls[ x ][ y ] ) generateCube( x, y );
+            else if ( rnd( 20 ) === 0 )
+            {
+                // Add random torches!
+                var options = [];
+
+                if ( x > 0  && walls[ x - 1 ][ y ] )
+                    options.push( Direction.West );
+                if ( x < walls.length - 1 && walls[ x + 1 ][ y ] )
+                    options.push( Direction.East );
+
+                if ( y > 0  && walls[ x ][ y - 1 ] )
+                    options.push( Direction.South );
+                if ( y < walls[ x ].length - 1 && walls[ x ][ y + 1 ] )
+                    options.push( Direction.North );
+
+                // There's always a possibility, no need to check
+                new Torch( x, 0, y, DirectionToAngle( options.randomElement() ) );
+            }
         }
     }
+
+    // Place a torch at the entrance of the maze
+    new Torch( -1, 0, 0, DirectionToAngle( Direction.East ) );
+
+    this.walls = mazeWalls;
 };
 
 Game.prototype.playerCollides = function( dir, amount )
 {
     var ray = new THREE.Raycaster( this.player.position, dir, 0, amount + 0.14 );
 
-    var colliders = ray.intersectObjects( scene.children, false );
+    var colliders = ray.intersectObjects( this.walls, false );
 
     return (colliders.length > 0 && colliders[0].distance - 0.5 < amount);
 };
@@ -163,6 +185,9 @@ Game.prototype.update = function( delta )
         this.player.position.z += xProd.z * MoveSpeed;
     }
 
+    /*torches.forEach( function( torch ) {
+        torch.update( delta );
+    } );*/
     this.player.update();
 
     InputManager.update();
