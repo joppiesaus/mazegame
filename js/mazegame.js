@@ -5,20 +5,28 @@ var Game = function(args)
 
     var light = new THREE.AmbientLight( 0x909090 );
     scene.add( light );
-    
-    new PointerLock();
+
+    // Add fullscreen key
+    THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
+
+    // init pointerlock
+    if ( requestPointerLock() )
+    {
+        new PointerLock();
+    }
 
     this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
     scene.add( this.player.light );
 
+    // Euler rotation order for camera movement
+    camera.rotation.order = "ZYX";
     this.player.update = function()
     {
         this.light.position.copy( this.position );
         camera.position.copy( this.position );
+
         camera.rotation.y = this.theta;
         camera.rotation.x = this.phi;
-
-        //controls.getObject().position.copy( this.position );
     };
 
     this.player.update();
