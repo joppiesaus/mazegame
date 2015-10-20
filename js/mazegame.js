@@ -5,15 +5,20 @@ var Game = function(args)
 
     var light = new THREE.AmbientLight( 0x909090 );
     scene.add( light );
+    
+    new PointerLock();
 
     this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
     scene.add( this.player.light );
 
     this.player.update = function()
     {
-        this.light.position.set( this.position );
+        this.light.position.copy( this.position );
+        camera.position.copy( this.position );
+        camera.rotation.y = this.theta;
+        camera.rotation.x = this.phi;
 
-        controls.getObject().position.copy( this.position );
+        //controls.getObject().position.copy( this.position );
     };
 
     this.player.update();
@@ -110,7 +115,6 @@ Game.prototype.playerCollides = function( dir, amount )
 
 Game.prototype.update = function( delta )
 {
-    // TODO: Pointerlock!
     var MoveSpeed = 1.5 * delta;
     var KeyRotateSpeed = 1.4 * delta;
 
