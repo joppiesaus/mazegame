@@ -11,10 +11,9 @@ var Game = function(args)
 
     this.player.update = function()
     {
-        this.light.position.set( this.position.x, this.position.y, this.position.z );
+        this.light.position.set( this.position );
 
-        controls.getObject().position.set( this.position.x, this.position.y, this.position.z );
-
+        controls.getObject().position.copy( this.position );
     };
 
     this.player.update();
@@ -23,7 +22,7 @@ var Game = function(args)
     var mazeWalls = [];
 
     var CubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var CubeMaterial = new THREE.MeshNormalMaterial( {
+    var CubeMaterial = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
         bumpMap: Asset.texture( "bump.png" ),
         bumpScale: 0.55,

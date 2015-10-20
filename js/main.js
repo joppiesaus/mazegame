@@ -6,15 +6,15 @@ var havePointerLock = checkForPointerLock();
 
 var init = function()
 {
-   	initPointerLock();
-	THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
+    initPointerLock();
+    THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
 
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
     //scene.add( camera );
-	controls = new THREE.PointerLockControls( camera );
-	scene.add( controls.getObject() );
+    controls = new THREE.PointerLockControls( camera );
+    scene.add( controls.getObject() );
 
     timer = new THREE.Clock();
 
@@ -27,13 +27,13 @@ var init = function()
 
 var onWindowResize = function()
 {
-    controls.getObject().aspect = window.innerWidth / window.innerHeight;
-	controls.getObject().updateProjectionMatrix();
+    //controls.getObject().aspect = window.innerWidth / window.innerHeight;
+    //controls.getObject().updateProjectionMatrix();
 
-    //camera.aspect = window.innerWidth / window.innerHeight;
-	//camera.updateProjectionMatrix();
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth, window.innerHeight );
 };
 
 var start = function()
