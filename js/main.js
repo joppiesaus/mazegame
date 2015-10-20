@@ -21,9 +21,9 @@ var init = function()
 var onWindowResize = function()
 {
     camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth, window.innerHeight );
 };
 
 var start = function()
@@ -44,6 +44,7 @@ var animate = function()
         renderer.render( scene, camera );
     }
 };
+
 
 init();
 g = new Game( { width: 8, height: 8 } ); // TODO: Make difficulty selection
