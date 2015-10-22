@@ -39,6 +39,7 @@ var Game = function(args)
     var CubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
     var CubeMaterial = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
+        map: Asset.texture( "sierpinski.png" ),
         bumpMap: Asset.texture( "bump.png" ),
         bumpScale: 0.55,
         shininess: 12,
