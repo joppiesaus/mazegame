@@ -2,18 +2,21 @@ var Asset = {
 
     textures: [],
 
+    init: function()
+    {
+        this.textureLoader = new THREE.TextureLoader();
+    },
+
     texture: function( name )
     {
-        if ( this.textures[ name ] )
-        {
-            return this.textures[ name ];
-        }
-
-        return this.textures[ name ] = THREE.ImageUtils.loadTexture(
+        return this.textures[ name ] = this.textures[ name ] || this.textureLoader.load(
             "res/" + name,
-            null,
-            function(){},
-            function(){}
+            function( texture ) {},
+            function( xhr ) {},
+            function( xhr )
+            {
+                console.warn( "Couldn't load " + name + "!" );
+            }
         );
     },
 

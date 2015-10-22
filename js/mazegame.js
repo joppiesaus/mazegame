@@ -3,6 +3,8 @@ var Game = function(args)
     this.hacks = false;
     this.player = { position: new THREE.Vector3( -1.5, 0, 1 ), theta: Math.PI * 1.5, phi: 0 };
 
+    Asset.init();
+
     var light = new THREE.AmbientLight( 0x909090 );
     scene.add( light );
 
