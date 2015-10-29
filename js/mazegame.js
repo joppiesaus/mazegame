@@ -1,7 +1,7 @@
 var Game = function(args)
 {
     this.hacks = false;
-    this.player = { position: new THREE.Vector3( -1.5, 0, 1 ), theta: Math.PI * 1.5, phi: 0 };
+    this.player = { position: new THREE.Vector3( -1.5, 0.1, 1 ), theta: Math.PI * 1.5, phi: 0 };
 
     Asset.init();
 
@@ -82,6 +82,10 @@ var Game = function(args)
     walls[ 0 ][ 1 ] = false; // start
     walls[ maze.width * 2 - 1 ][ maze.height * 2 ] = false; // finish
 
+    // WARNING: Mutating maze dimensions!
+    maze.width = walls.length;
+    maze.height = walls[ 0 ].length;
+
     for ( var x = 0; x < walls.length; x++ )
     {
         for ( var y = 0; y < walls[ x ].length; y++ )
@@ -112,6 +116,43 @@ var Game = function(args)
     new Torch( -1, 0, 0, DirectionToAngle( Direction.East ) );
 
     this.walls = mazeWalls;
+
+    // I do not like this code
+    var MazePlane = new THREE.PlaneGeometry( maze.width, maze.height );
+
+    var CeilingBumpMap = Asset.texture( "ceiling_bump.png" );
+    CeilingBumpMap.wrapT = CeilingBumpMap.wrapS = THREE.RepeatWrapping;
+    CeilingBumpMap.repeat.set( maze.width, maze.height );
+
+    var CeilingMaterial = new THREE.MeshPhongMaterial( {
+        color: 0xaaaaaa,
+        bumpMap: CeilingBumpMap,
+        bumpScale: 0.4,
+        shininess: 11
+    } );
+
+    var Ceiling = new THREE.Mesh( MazePlane, CeilingMaterial );
+    Ceiling.position.set( maze.width / 2 - 1 / 2, 1 / 2, maze.height / 2 - 1 / 2 );
+    Ceiling.rotation.x = Math.TAU / 4;
+    scene.add( Ceiling );
+
+
+    var FloorBumpMap = Asset.texture( "floor_bump.png" );
+    FloorBumpMap.wrapT = FloorBumpMap.wrapS = THREE.RepeatWrapping;
+    FloorBumpMap.repeat.set( maze.width, maze.height );
+
+    var FloorMaterial = new THREE.MeshPhongMaterial( {
+        color: 0xb0b0b0,
+        bumpMap: FloorBumpMap,
+        bumpScale: 0.64,
+        shininess: 10
+    } );
+
+    var Floor = new THREE.Mesh( MazePlane, FloorMaterial );
+    Floor.position.set( maze.width / 2 - 1 / 2, -1 / 2, maze.height / 2 - 1 / 2 );
+    Floor.rotation.x = Math.TAU * 3 / 4;
+    scene.add( Floor );
+
 };
 
 Game.prototype.playerCollides = function( dir, amount )
