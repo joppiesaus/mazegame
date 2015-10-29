@@ -20,6 +20,8 @@ var PointerLock = function( args )
 
         g.player.theta -= movementX * scope.sensitivity;
         g.player.phi -= movementY * scope.sensitivity;
+
+        g.player.phi = Math.constrainRadius( g.player.phi, Math.TAU / 4 );
     }
 
     document.addEventListener( "mousemove", onMouseMove, false );
