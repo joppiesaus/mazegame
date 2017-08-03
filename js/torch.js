@@ -5,6 +5,7 @@ var TorchBuilder =
 
     init: function()
     {
+        // Too much hard-coded. It depends on the cube sizes, too.
         var geometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
         var material = new THREE.MeshNormalMaterial();
 
@@ -16,10 +17,6 @@ var TorchBuilder =
 // A torch!
 var Torch = function( x, y, z, angle )
 {
-    // Too much hard-coded. It depends on the cube sizes, too.
-    var geometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
-    var material = new THREE.MeshNormalMaterial();
-
     var torchPos = new THREE.Vector3( 0.45, 0.18, 0 );
     var lightPos = new THREE.Vector3( 0.37, 0.18 + 0.2, 0 );
     var rotationVec = new THREE.Vector3( 0, 0, 0.39 );

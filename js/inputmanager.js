@@ -32,12 +32,12 @@ var InputManager =
     },
 };
 
-document.onkeydown = function(evnt)
+document.onkeydown = function( evnt )
 {
     InputManager.keyDown(evnt.keyCode);
 };
 
-document.onkeyup = function(evnt)
+document.onkeyup = function( evnt )
 {
     InputManager.keyUp(evnt.keyCode);
 };
