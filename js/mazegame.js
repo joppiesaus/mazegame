@@ -1,6 +1,6 @@
 var Game = function(args)
 {
-    this.hacks = false;
+    this.hacks = !!args.hacks || false;
     this.player = { position: new THREE.Vector3( -1.5, 0.1, 1 ), theta: Math.PI * 1.5, phi: 0 };
 
     Asset.init();
@@ -36,25 +36,6 @@ var Game = function(args)
     var maze = generateMaze( args.width, args.height );
     var mazeWalls = [];
 
-    var CubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var CubeMaterial = new THREE.MeshPhongMaterial( {
-        color: 0xaaaaaa,
-        bumpMap: Asset.texture( "bump.png" ),
-        bumpScale: 0.55,
-        shininess: 12,
-    } );
-    var CubeMesh = new THREE.Mesh( CubeGeometry, CubeMaterial );
-
-    // TODO: Make pretty cubes.
-    // I mean walls. With textures and bump maps, and lighting and such.
-    var generateCube = function( x, y )
-    {
-        var cube = CubeMesh.clone();
-        cube.position.set( x, 0, y );
-
-        mazeWalls.push( cube );
-        scene.add( cube );
-    };
 
     TorchBuilder.init();
 
@@ -86,11 +67,163 @@ var Game = function(args)
     maze.width = walls.length;
     maze.height = walls[ 0 ].length;
 
+    console.log( walls );
+
+    // oh my the y and height was such a worse mistake
+
+    // ! WALLS ARE Z, X !
+
+    var xw = []; // walls along x axis, first dimension is x, second z
+    var zw = []; // walls along z axis, first dimension is z, second x
+
+    // additional + 1 is for ez culling
+    for ( var x = 0; x < maze.width + 1; x++ )
+    {
+        xw.push( [] );
+        for ( var z = 0; z < maze.height + 1 + 1; z++ )
+        {
+            xw[ x ].push( false );
+        }
+    }
+    for ( var z = 0; z < maze.height + 1; z++ )
+    {
+        zw.push( [] );
+        for ( var x = 0; x < maze.width + 1 + 1; x++ )
+        {
+            zw[ z ].push( false );
+        }
+    }
+
+    for ( var x = 0; x < maze.width; x++ )
+    {
+        for ( var z = 0; z < maze.height; z++ )
+        {
+            if ( walls[ z ][ x ] )
+            {
+                // remove size conditions, replace by unrolled loop
+                if ( z <= 0 || !walls[ z - 1 ][ x ] )
+                {
+                    // front
+                    xw[ x ][ z ] = true;
+                }
+                if ( z >= maze.height - 1 || !walls[ z + 1 ][ x ] )
+                {
+                    // back
+                    xw[ x ][ z + 1 ] = true;
+                }
+                if ( !walls[ z ][ x - 1 ] )
+                {
+                    // left
+                    zw[ z ][ x ] = true;
+                }
+                if ( !walls[ z ][ x + 1 ] )
+                {
+                    // right
+                    zw[ z ][ x + 1 ] = true;
+                }
+            }
+        }
+    }
+
+    console.log( xw );
+    console.log( zw );
+
+    var matrix = new THREE.Matrix4();
+    var tmpgeom = new THREE.Geometry();
+
+    var wgeom, wbgeom;
+
+    var length;
+    for ( var z = 0; z <  xw[ 0 ].length; z++ )
+    {
+        length = 0;
+        for ( var x = 0; x < xw.length; x++ )
+        {
+            if ( xw[ x ][ z ] )
+            {
+                length++;
+            }
+            else if ( length > 0 )
+            {
+                xbgeom = new THREE.PlaneBufferGeometry( 1 * length, 1 );
+                xbgeom.rotateY( Math.TAU / 4 );
+                xbgeom.translate( - 1 / 2, 0, - 1 / 2 );
+
+                xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
+
+                matrix.makeTranslation(
+                    z,
+                    0,
+                    x - length / 2
+                );
+
+                tmpgeom.merge( xgeom, matrix );
+                length = 0;
+            }
+        }
+    }
+
+    for ( var x = 0; x < zw[ 0 ].length; x++ )
+    {
+        length = 0;
+        for ( var z = 0; z < zw.length; z++ )
+        {
+            if ( zw[ z ][ x ] )
+            {
+                length++;
+            }
+            else if ( length > 0 )
+            {
+                xbgeom = new THREE.PlaneBufferGeometry( 1 * length, 1 );
+                xbgeom.translate( - 1 / 2, 0, - 1 / 2 );
+
+                xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
+
+                matrix.makeTranslation(
+                    z - length / 2,
+                    0,
+                    x
+                );
+
+                tmpgeom.merge( xgeom, matrix );
+                length = 0;
+            }
+        }
+    }
+
+    var geom = new THREE.BufferGeometry().fromGeometry( tmpgeom );
+    geom.computeBoundingSphere();
+
+
+    var CubeBumpMap = Asset.texture( "bump.png" );
+    CubeBumpMap.wrapT = CubeBumpMap.wrapS = THREE.RepeatWrapping;
+    CubeBumpMap.offset.set( 0, 0 );
+    CubeBumpMap.repeat.set( 1, 1 ); // TODO: UV
+
+
+    var CubeMaterial = new THREE.MeshPhongMaterial( {
+        color: 0xaaaaaa,
+        bumpMap: CubeBumpMap,
+        bumpScale: 0.55,
+        shininess: 12,
+        side: THREE.DoubleSide
+    } );
+    CubeMaterial.displacementMap = CubeBumpMap;
+    CubeMaterial.displacementScale = 23;
+
+
+    var mesh = new THREE.Mesh(
+        geom,
+        //new THREE.MeshStandardMaterial( { color: 0xff0000, wireframe: true })
+        CubeMaterial
+    );
+    scene.add( mesh );
+
     for ( var x = 0; x < walls.length; x++ )
     {
         for ( var y = 0; y < walls[ x ].length; y++ )
         {
-            if ( walls[ x ][ y ] ) generateCube( x, y );
+            if ( walls[ x ][ y ] ) undefined;
             else if ( rnd( 20 ) === 0 )
             {
                 // Add random torches!
@@ -107,6 +240,7 @@ var Game = function(args)
                     options.push( Direction.North );
 
                 // There's always a possibility, no need to check
+                // TODO: torch optimizing(render distance)
                 new Torch( x, 0, y, DirectionToAngle( options.randomElement() ) );
             }
         }
@@ -115,6 +249,8 @@ var Game = function(args)
     // Place a torch at the entrance of the maze
     new Torch( -1, 0, 0, DirectionToAngle( Direction.East ) );
 
+    // TODO: Performance. Maybe chunks? Maybe different algorithm?
+    mazeWalls.push( mesh );
     this.walls = mazeWalls;
 
     // I do not like this code
