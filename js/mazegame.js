@@ -130,63 +130,54 @@ var Game = function(args)
 
     var matrix = new THREE.Matrix4();
     var tmpgeom = new THREE.Geometry();
-
-    var wgeom, wbgeom;
-
-    var length;
+    
+    
+    var SingleWallGeom = new THREE.PlaneBufferGeometry( 1, 1 );
+    
+    // Generate geometries and merge them
     for ( var z = 0; z <  xw[ 0 ].length; z++ )
     {
-        length = 0;
         for ( var x = 0; x < xw.length; x++ )
         {
             if ( xw[ x ][ z ] )
             {
-                length++;
-            }
-            else if ( length > 0 )
-            {
-                xbgeom = new THREE.PlaneBufferGeometry( 1 * length, 1 );
+                xbgeom = SingleWallGeom.clone();
                 xbgeom.rotateY( Math.TAU / 4 );
-                xbgeom.translate( - 1 / 2, 0, - 1 / 2 );
-
+                xbgeom.translate( -1 / 2, 0, -1 / 2 );
+                
                 xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
-
+                
                 matrix.makeTranslation(
                     z,
                     0,
-                    x - length / 2
+                    x + 1 / 2
                 );
 
                 tmpgeom.merge( xgeom, matrix );
-                length = 0;
             }
         }
     }
+    
+    SingleWallGeom.translate( -1 / 2, 0, -1 / 2 );
 
     for ( var x = 0; x < zw[ 0 ].length; x++ )
     {
-        length = 0;
         for ( var z = 0; z < zw.length; z++ )
         {
             if ( zw[ z ][ x ] )
             {
-                length++;
-            }
-            else if ( length > 0 )
-            {
-                xbgeom = new THREE.PlaneBufferGeometry( 1 * length, 1 );
-                xbgeom.translate( - 1 / 2, 0, - 1 / 2 );
+                xbgeom = SingleWallGeom.clone();
+                // translate step is missing because this is done before the loop
 
                 xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
 
                 matrix.makeTranslation(
-                    z - length / 2,
+                    z + 1 / 2,
                     0,
                     x
                 );
 
                 tmpgeom.merge( xgeom, matrix );
-                length = 0;
             }
         }
     }
@@ -223,8 +214,7 @@ var Game = function(args)
     {
         for ( var y = 0; y < walls[ x ].length; y++ )
         {
-            if ( walls[ x ][ y ] ) undefined;
-            else if ( rnd( 20 ) === 0 )
+            if ( !walls[ x ][ y ] && rnd( 20 ) === 0 )
             {
                 // Add random torches!
                 var options = [];
