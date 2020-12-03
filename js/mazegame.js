@@ -133,57 +133,56 @@ var Game = function(args)
     
     
     var SingleWallGeom = new THREE.PlaneBufferGeometry( 1, 1 );
+    var SingleWallGeomX = new THREE.Geometry().fromBufferGeometry(
+            SingleWallGeom.clone()
+                .rotateY( Math.TAU / 4 )
+                .translate( -1 / 2, 0, -1 / 2 )
+        );
+    var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry(
+            SingleWallGeom.clone()
+                .translate( -1 / 2, 0, -1 / 2 )
+        );
     
     // Generate geometries and merge them
+    
+    // x axis
     for ( var z = 0; z <  xw[ 0 ].length; z++ )
     {
         for ( var x = 0; x < xw.length; x++ )
         {
             if ( xw[ x ][ z ] )
             {
-                xbgeom = SingleWallGeom.clone();
-                xbgeom.rotateY( Math.TAU / 4 );
-                xbgeom.translate( -1 / 2, 0, -1 / 2 );
-                
-                xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
-                
                 matrix.makeTranslation(
                     z,
                     0,
                     x + 1 / 2
                 );
 
-                tmpgeom.merge( xgeom, matrix );
+                tmpgeom.merge( SingleWallGeomX, matrix );
             }
         }
     }
-    
-    SingleWallGeom.translate( -1 / 2, 0, -1 / 2 );
 
+    // z axis
     for ( var x = 0; x < zw[ 0 ].length; x++ )
     {
         for ( var z = 0; z < zw.length; z++ )
         {
             if ( zw[ z ][ x ] )
             {
-                xbgeom = SingleWallGeom.clone();
-                // translate step is missing because this is done before the loop
-
-                xgeom = new THREE.Geometry().fromBufferGeometry( xbgeom );
-
                 matrix.makeTranslation(
                     z + 1 / 2,
                     0,
                     x
                 );
 
-                tmpgeom.merge( xgeom, matrix );
+                tmpgeom.merge( SingleWallGeomZ, matrix );
             }
         }
     }
 
-    var geom = new THREE.BufferGeometry().fromGeometry( tmpgeom );
-    geom.computeBoundingSphere();
+    var mazeGeom = new THREE.BufferGeometry().fromGeometry( tmpgeom );
+    mazeGeom.computeBoundingSphere();
 
 
     var CubeBumpMap = Asset.texture( "bump.png" );
@@ -203,12 +202,12 @@ var Game = function(args)
     CubeMaterial.displacementScale = 23;
 
 
-    var mesh = new THREE.Mesh(
-        geom,
+    var mazeMesh = new THREE.Mesh(
+        mazeGeom,
         //new THREE.MeshStandardMaterial( { color: 0xff0000, wireframe: true })
         CubeMaterial
     );
-    scene.add( mesh );
+    scene.add( mazeMesh );
 
     for ( var x = 0; x < walls.length; x++ )
     {
@@ -240,7 +239,7 @@ var Game = function(args)
     new Torch( -1, 0, 0, DirectionToAngle( Direction.East ) );
 
     // TODO: Performance. Maybe chunks? Maybe different algorithm?
-    mazeWalls.push( mesh );
+    mazeWalls.push( mazeMesh );
     this.walls = mazeWalls;
 
     // I do not like this code
