@@ -2,6 +2,10 @@ var g;
 
 var camera, scene, renderer, timer;
 
+var WEBXR_PRESENT = false;
+
+
+
 var init = function()
 {
     scene = new THREE.Scene();
@@ -16,6 +20,39 @@ var init = function()
     document.body.appendChild(renderer.domElement);
 
     window.addEventListener( "resize", onWindowResize, false );
+        
+};
+
+var postInit = function() {
+    
+    if ( 'xr' in navigator ) {
+
+        navigator.xr.isSessionSupported( 'immersive-vr' ).then( function ( supported ) {
+
+            WEBXR_PRESENT = supported;
+            
+            import("../lib/VRButton.js")
+                .then((module) => {
+                    
+                    document.body.appendChild( module.VRButton.createButton( renderer ) );
+                    
+                    renderer.xr.enabled = true;
+                    //renderer.xr.setReferenceSpaceType( "unbounded" );
+                    renderer.xr.setReferenceSpaceType( "local" );
+                    
+                }
+            );
+            
+            g.postXRInit();
+
+        } );
+    
+    } else {
+        
+        g.postXRInit();
+        
+    }
+    
 };
 
 var onWindowResize = function()
@@ -33,20 +70,24 @@ var start = function()
 
 var animate = function()
 {
-    requestAnimationFrame( animate );
+    renderer.setAnimationLoop( function() {
+        
+        var delta = timer.getDelta();
 
-    var delta = timer.getDelta();
+        g.update(delta);
 
-    g.update(delta);
-
-    if ( g.mustRender() )
-    {
-        renderer.render( scene, camera );
-    }
+        if ( g.mustRender() )
+        {
+            renderer.render( scene, camera );
+        }
+        
+    } );
+    
 };
 
 
 init();
 g = new Game( { width: 8, height: 8 } ); // TODO: Make difficulty selection
+postInit();
 start();
 animate();

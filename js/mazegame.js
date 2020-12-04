@@ -8,15 +8,6 @@ var Game = function(args)
     var light = new THREE.AmbientLight( 0x909090 );
     scene.add( light );
 
-    // Add fullscreen key
-    THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
-
-    // init pointerlock
-    if ( requestPointerLock() )
-    {
-        new PointerLock();
-    }
-
     this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
     scene.add( this.player.light );
 
@@ -278,6 +269,23 @@ var Game = function(args)
     Floor.rotation.x = Math.TAU * 3 / 4;
     scene.add( Floor );
 
+};
+
+Game.prototype.postXRInit = function() {
+    
+    /*if ( WEBXR_PRESENT ) {
+        return;
+    }*/
+     
+    // Add fullscreen key
+    THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
+
+    // init pointerlock
+    if ( requestPointerLock() )
+    {
+        new PointerLock();
+    }
+    
 };
 
 Game.prototype.playerCollides = function( dir, amount )
