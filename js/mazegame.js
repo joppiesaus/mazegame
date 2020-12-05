@@ -62,10 +62,10 @@ var Game = function(args)
 
     walls[ 0 ][ 1 ] = false; // start
     walls[ maze.width * 2 - 1 ][ maze.height * 2 ] = false; // finish
-
-    // WARNING: Mutating maze dimensions!
-    maze.width = walls.length;
-    maze.height = walls[ 0 ].length;
+    
+    
+    var actualMazeWidth = walls.length;
+    var actualMazeHeight = walls[ 0 ].length;
 
     console.log( walls );
 
@@ -77,26 +77,26 @@ var Game = function(args)
     var zw = []; // walls along z axis, first dimension is z, second x
 
     // additional + 1 is for ez culling
-    for ( var x = 0; x < maze.width + 1; x++ )
+    for ( var x = 0; x < actualMazeWidth + 1; x++ )
     {
         xw.push( [] );
-        for ( var z = 0; z < maze.height + 1 + 1; z++ )
+        for ( var z = 0; z < actualMazeHeight + 1 + 1; z++ )
         {
             xw[ x ].push( false );
         }
     }
-    for ( var z = 0; z < maze.height + 1; z++ )
+    for ( var z = 0; z < actualMazeHeight + 1; z++ )
     {
         zw.push( [] );
-        for ( var x = 0; x < maze.width + 1 + 1; x++ )
+        for ( var x = 0; x < actualMazeWidth + 1 + 1; x++ )
         {
             zw[ z ].push( false );
         }
     }
 
-    for ( var x = 0; x < maze.width; x++ )
+    for ( var x = 0; x < actualMazeWidth; x++ )
     {
-        for ( var z = 0; z < maze.height; z++ )
+        for ( var z = 0; z < actualMazeHeight; z++ )
         {
             if ( walls[ z ][ x ] )
             {
@@ -106,7 +106,7 @@ var Game = function(args)
                     // front
                     xw[ x ][ z ] = true;
                 }
-                if ( z >= maze.height - 1 || !walls[ z + 1 ][ x ] )
+                if ( z >= actualMazeHeight - 1 || !walls[ z + 1 ][ x ] )
                 {
                     // back
                     xw[ x ][ z + 1 ] = true;
@@ -244,11 +244,11 @@ var Game = function(args)
     this.walls = mazeWalls;
 
     // I do not like this code
-    var MazePlane = new THREE.PlaneGeometry( maze.width, maze.height );
+    var MazePlane = new THREE.PlaneGeometry( actualMazeWidth, actualMazeHeight );
 
     var CeilingBumpMap = Asset.texture( "ceiling_bump.png" );
     CeilingBumpMap.wrapT = CeilingBumpMap.wrapS = THREE.RepeatWrapping;
-    CeilingBumpMap.repeat.set( maze.width, maze.height );
+    CeilingBumpMap.repeat.set( actualMazeWidth, actualMazeHeight );
 
     var CeilingMaterial = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
@@ -258,14 +258,14 @@ var Game = function(args)
     } );
 
     var Ceiling = new THREE.Mesh( MazePlane, CeilingMaterial );
-    Ceiling.position.set( maze.width / 2 - 1 / 2, 1 / 2, maze.height / 2 - 1 / 2 );
+    Ceiling.position.set( maze.width, 1 / 2, maze.height );
     Ceiling.rotation.x = Math.TAU / 4;
     scene.add( Ceiling );
 
 
     var FloorBumpMap = Asset.texture( "floor_bump.png" );
     FloorBumpMap.wrapT = FloorBumpMap.wrapS = THREE.RepeatWrapping;
-    FloorBumpMap.repeat.set( maze.width, maze.height );
+    FloorBumpMap.repeat.set( actualMazeWidth, actualMazeHeight );
 
     var FloorMaterial = new THREE.MeshPhongMaterial( {
         color: 0xb0b0b0,
@@ -275,7 +275,7 @@ var Game = function(args)
     } );
 
     var Floor = new THREE.Mesh( MazePlane, FloorMaterial );
-    Floor.position.set( maze.width / 2 - 1 / 2, -1 / 2, maze.height / 2 - 1 / 2 );
+    Floor.position.set( maze.width, -1 / 2, maze.height );
     Floor.rotation.x = Math.TAU * 3 / 4;
     scene.add( Floor );
 
