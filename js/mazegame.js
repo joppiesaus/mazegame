@@ -136,12 +136,13 @@ var Game = function(args)
     var SingleWallGeomX = new THREE.Geometry().fromBufferGeometry(
             SingleWallGeom.clone()
                 .rotateY( Math.TAU / 4 )
-                .translate( -1 / 2, 0, -1 / 2 )
         );
-    var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry(
-            SingleWallGeom.clone()
-                .translate( -1 / 2, 0, -1 / 2 )
-        );
+    
+    //var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry( SingleWallGeom.clone().rotateY( Math.TAU / 2 ).translate( 0, 0, -1 ) );
+    
+    var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry( SingleWallGeom );
+    
+    
     
     // Generate geometries and merge them
     
@@ -153,9 +154,9 @@ var Game = function(args)
             if ( xw[ x ][ z ] )
             {
                 matrix.makeTranslation(
-                    z,
+                    z - 1 / 2,
                     0,
-                    x + 1 / 2
+                    x
                 );
 
                 tmpgeom.merge( SingleWallGeomX, matrix );
@@ -171,11 +172,11 @@ var Game = function(args)
             if ( zw[ z ][ x ] )
             {
                 matrix.makeTranslation(
-                    z + 1 / 2,
+                    z,
                     0,
-                    x
+                    x - 1 / 2
                 );
-
+                
                 tmpgeom.merge( SingleWallGeomZ, matrix );
             }
         }
