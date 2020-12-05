@@ -174,7 +174,7 @@ var Game = function(args)
                 matrix.makeTranslation(
                     z,
                     0,
-                    x + 1 / 2
+                    x - 1 / 2
                 );
                 
                 tmpgeom.merge( SingleWallGeomZ, matrix );
