@@ -363,14 +363,20 @@ Game.prototype.update = function( delta )
 
     var dir = new THREE.Vector3( -1.0 * sTheta, 0, -1.0 * cTheta );
 
-    if ( InputManager.isKeyDown( 87 /*w*/ ) &&
+    if ( (
+            InputManager.isKeyDown( 87 /* w */ ) ||
+            InputManager.isKeyDown( 38 /* arrow key up */ )
+         ) &&
          !this.playerCollides( dir, MoveSpeed ))
     {
         // Move forward
         this.player.position.x += dir.x * MoveSpeed;
         this.player.position.z += dir.z * MoveSpeed;
     }
-    else if ( InputManager.isKeyDown( 83 /*s*/ ) &&
+    else if ( (
+            InputManager.isKeyDown( 83 /* s */ ) ||
+            InputManager.isKeyDown( 40 /* arrow key down */ )
+            ) &&
          !this.playerCollides( new THREE.Vector3( -dir.x, -dir.y, -dir.z ), MoveSpeed ))
     {
         // Move backward
@@ -381,14 +387,20 @@ Game.prototype.update = function( delta )
     var xProd = new THREE.Vector3();
     xProd.crossVectors( dir, new THREE.Vector3( 0, 1.0, 0 ) );
 
-    if ( InputManager.isKeyDown( 65 /*a*/ ) &&
+    if ( (
+            InputManager.isKeyDown( 65 /* a */ ) ||
+            InputManager.isKeyDown( 37 /* arrow key left */ )
+        ) &&
          !this.playerCollides(  new THREE.Vector3( -xProd.x, -xProd.y, -xProd.z ), MoveSpeed ) )
     {
         // Move left
         this.player.position.x -= xProd.x * MoveSpeed;
         this.player.position.z -= xProd.z * MoveSpeed;
     }
-    else if ( InputManager.isKeyDown( 68 /*d*/ ) &&
+    else if ( (
+            InputManager.isKeyDown( 68 /*d*/ ) || 
+            InputManager.isKeyDown( 39 /* arrow key right */ )
+              ) &&
               !this.playerCollides( xProd, MoveSpeed ) )
     {
         // Move right
