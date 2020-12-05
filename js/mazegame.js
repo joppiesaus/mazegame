@@ -104,22 +104,22 @@ var Game = function(args)
                 if ( z <= 0 || !walls[ z - 1 ][ x ] )
                 {
                     // front
-                    xw[ x ][ z ] = true;
+                    xw[ x ][ z ] = { flipped: 1 };
                 }
                 if ( z >= actualMazeHeight - 1 || !walls[ z + 1 ][ x ] )
                 {
                     // back
-                    xw[ x ][ z + 1 ] = true;
+                    xw[ x ][ z + 1 ] = { flipped: 0 };
                 }
-                if ( !walls[ z ][ x - 1 ] )
+                if ( x <= 0 || !walls[ z ][ x - 1 ] )
                 {
                     // left
-                    zw[ z ][ x ] = true;
+                    zw[ z ][ x ] = { flipped: 1 };
                 }
-                if ( !walls[ z ][ x + 1 ] )
+                if ( x >= actualMazeWidth - 1 || !walls[ z ][ x + 1 ] )
                 {
                     // right
-                    zw[ z ][ x + 1 ] = true;
+                    zw[ z ][ x + 1 ] = { flipped: 0 };
                 }
             }
         }
@@ -137,6 +137,25 @@ var Game = function(args)
             SingleWallGeom.clone()
                 .rotateY( Math.TAU / 4 )
         );
+    var SingleWallGeoms = {
+        x: [
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.TAU / 4 )
+            ),
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.TAU * 3 / 4 )
+            )
+        ],
+        z: [
+            new THREE.Geometry().fromBufferGeometry( SingleWallGeom ),
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.PI )
+            )
+        ]
+    }
     
     //var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry( SingleWallGeom.clone().rotateY( Math.TAU / 2 ).translate( 0, 0, -1 ) );
     
@@ -151,15 +170,19 @@ var Game = function(args)
     {
         for ( var x = 0; x < xw.length; x++ )
         {
-            if ( xw[ x ][ z ] )
+            var wall = xw[ x ][ z ];
+            if ( wall )
             {
                 matrix.makeTranslation(
                     z - 1 / 2,
                     0,
                     x
                 );
-
-                tmpgeom.merge( SingleWallGeomX, matrix );
+                
+                tmpgeom.merge( 
+                    SingleWallGeoms.x[ wall.flipped ],
+                    matrix
+                );
             }
         }
     }
@@ -169,7 +192,8 @@ var Game = function(args)
     {
         for ( var z = 0; z < zw.length; z++ )
         {
-            if ( zw[ z ][ x ] )
+            var wall = zw[ z ][ x ];
+            if ( wall )
             {
                 matrix.makeTranslation(
                     z,
@@ -177,7 +201,10 @@ var Game = function(args)
                     x - 1 / 2
                 );
                 
-                tmpgeom.merge( SingleWallGeomZ, matrix );
+                tmpgeom.merge( 
+                    SingleWallGeoms.z[ wall.flipped ],
+                    matrix
+                );
             }
         }
     }
