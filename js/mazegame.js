@@ -5,24 +5,35 @@ var Game = function(args)
 
     Asset.init();
 
-    var light = new THREE.AmbientLight( 0x909090 );
+    var light = new THREE.AmbientLight( 0x808080 );
     scene.add( light );
 
     this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
-    scene.add( this.player.light );
-
+    
+    var dolly = new THREE.Group();
+    
+    dolly.add( this.player.light );
+    
     // Euler rotation order for camera movement
-    camera.rotation.order = "ZYX";
+    dolly.rotation.order = "ZYX";
+    
+    dolly.add( camera );
+    
     this.player.update = function()
     {
-        this.light.position.copy( this.position );
-        camera.position.copy( this.position );
+        this.dolly.position.copy( this.position );
 
-        camera.rotation.y = this.theta;
-        camera.rotation.x = this.phi;
+        // TODO: I don't know if this will provide problems in actual VR
+        this.dolly.rotation.y = this.theta;
+        this.dolly.rotation.x = this.phi;
+        
     };
 
+    
+    this.player.dolly = dolly;
     this.player.update();
+    
+    scene.add( dolly );
 
     var maze = generateMaze( args.width, args.height );
     var mazeWalls = [];
