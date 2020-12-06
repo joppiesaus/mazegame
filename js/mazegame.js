@@ -53,10 +53,10 @@ var Game = function(args)
 
     walls[ 0 ][ 1 ] = false; // start
     walls[ maze.width * 2 - 1 ][ maze.height * 2 ] = false; // finish
-
-    // WARNING: Mutating maze dimensions!
-    maze.width = walls.length;
-    maze.height = walls[ 0 ].length;
+    
+    
+    var actualMazeWidth = walls.length;
+    var actualMazeHeight = walls[ 0 ].length;
 
     console.log( walls );
 
@@ -68,26 +68,26 @@ var Game = function(args)
     var zw = []; // walls along z axis, first dimension is z, second x
 
     // additional + 1 is for ez culling
-    for ( var x = 0; x < maze.width + 1; x++ )
+    for ( var x = 0; x < actualMazeWidth + 1; x++ )
     {
         xw.push( [] );
-        for ( var z = 0; z < maze.height + 1 + 1; z++ )
+        for ( var z = 0; z < actualMazeHeight + 1 + 1; z++ )
         {
             xw[ x ].push( false );
         }
     }
-    for ( var z = 0; z < maze.height + 1; z++ )
+    for ( var z = 0; z < actualMazeHeight + 1; z++ )
     {
         zw.push( [] );
-        for ( var x = 0; x < maze.width + 1 + 1; x++ )
+        for ( var x = 0; x < actualMazeWidth + 1 + 1; x++ )
         {
             zw[ z ].push( false );
         }
     }
 
-    for ( var x = 0; x < maze.width; x++ )
+    for ( var x = 0; x < actualMazeWidth; x++ )
     {
-        for ( var z = 0; z < maze.height; z++ )
+        for ( var z = 0; z < actualMazeHeight; z++ )
         {
             if ( walls[ z ][ x ] )
             {
@@ -95,22 +95,22 @@ var Game = function(args)
                 if ( z <= 0 || !walls[ z - 1 ][ x ] )
                 {
                     // front
-                    xw[ x ][ z ] = true;
+                    xw[ x ][ z ] = { flipped: 1 };
                 }
-                if ( z >= maze.height - 1 || !walls[ z + 1 ][ x ] )
+                if ( z >= actualMazeHeight - 1 || !walls[ z + 1 ][ x ] )
                 {
                     // back
-                    xw[ x ][ z + 1 ] = true;
+                    xw[ x ][ z + 1 ] = { flipped: 0 };
                 }
-                if ( !walls[ z ][ x - 1 ] )
+                if ( x <= 0 || !walls[ z ][ x - 1 ] )
                 {
                     // left
-                    zw[ z ][ x ] = true;
+                    zw[ z ][ x ] = { flipped: 1 };
                 }
-                if ( !walls[ z ][ x + 1 ] )
+                if ( x >= actualMazeWidth - 1 || !walls[ z ][ x + 1 ] )
                 {
                     // right
-                    zw[ z ][ x + 1 ] = true;
+                    zw[ z ][ x + 1 ] = { flipped: 0 };
                 }
             }
         }
@@ -127,12 +127,32 @@ var Game = function(args)
     var SingleWallGeomX = new THREE.Geometry().fromBufferGeometry(
             SingleWallGeom.clone()
                 .rotateY( Math.TAU / 4 )
-                .translate( -1 / 2, 0, -1 / 2 )
         );
-    var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry(
-            SingleWallGeom.clone()
-                .translate( -1 / 2, 0, -1 / 2 )
-        );
+    var SingleWallGeoms = {
+        x: [
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.TAU / 4 )
+            ),
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.TAU * 3 / 4 )
+            )
+        ],
+        z: [
+            new THREE.Geometry().fromBufferGeometry( SingleWallGeom ),
+            new THREE.Geometry().fromBufferGeometry(
+                SingleWallGeom.clone()
+                    .rotateY( Math.PI )
+            )
+        ]
+    }
+    
+    //var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry( SingleWallGeom.clone().rotateY( Math.TAU / 2 ).translate( 0, 0, -1 ) );
+    
+    var SingleWallGeomZ = new THREE.Geometry().fromBufferGeometry( SingleWallGeom );
+    
+    
     
     // Generate geometries and merge them
     
@@ -141,15 +161,19 @@ var Game = function(args)
     {
         for ( var x = 0; x < xw.length; x++ )
         {
-            if ( xw[ x ][ z ] )
+            var wall = xw[ x ][ z ];
+            if ( wall )
             {
                 matrix.makeTranslation(
-                    z,
+                    z - 1 / 2,
                     0,
-                    x + 1 / 2
+                    x
                 );
-
-                tmpgeom.merge( SingleWallGeomX, matrix );
+                
+                tmpgeom.merge( 
+                    SingleWallGeoms.x[ wall.flipped ],
+                    matrix
+                );
             }
         }
     }
@@ -159,15 +183,19 @@ var Game = function(args)
     {
         for ( var z = 0; z < zw.length; z++ )
         {
-            if ( zw[ z ][ x ] )
+            var wall = zw[ z ][ x ];
+            if ( wall )
             {
                 matrix.makeTranslation(
-                    z + 1 / 2,
+                    z,
                     0,
-                    x
+                    x - 1 / 2
                 );
-
-                tmpgeom.merge( SingleWallGeomZ, matrix );
+                
+                tmpgeom.merge( 
+                    SingleWallGeoms.z[ wall.flipped ],
+                    matrix
+                );
             }
         }
     }
@@ -234,11 +262,11 @@ var Game = function(args)
     this.walls = mazeWalls;
 
     // I do not like this code
-    var MazePlane = new THREE.PlaneGeometry( maze.width, maze.height );
+    var MazePlane = new THREE.PlaneGeometry( actualMazeWidth, actualMazeHeight );
 
     var CeilingBumpMap = Asset.texture( "ceiling_bump.png" );
     CeilingBumpMap.wrapT = CeilingBumpMap.wrapS = THREE.RepeatWrapping;
-    CeilingBumpMap.repeat.set( maze.width, maze.height );
+    CeilingBumpMap.repeat.set( actualMazeWidth, actualMazeHeight );
 
     var CeilingMaterial = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
@@ -248,14 +276,14 @@ var Game = function(args)
     } );
 
     var Ceiling = new THREE.Mesh( MazePlane, CeilingMaterial );
-    Ceiling.position.set( maze.width / 2 - 1 / 2, 1 / 2, maze.height / 2 - 1 / 2 );
+    Ceiling.position.set( maze.width, 1 / 2, maze.height );
     Ceiling.rotation.x = Math.TAU / 4;
     scene.add( Ceiling );
 
 
     var FloorBumpMap = Asset.texture( "floor_bump.png" );
     FloorBumpMap.wrapT = FloorBumpMap.wrapS = THREE.RepeatWrapping;
-    FloorBumpMap.repeat.set( maze.width, maze.height );
+    FloorBumpMap.repeat.set( actualMazeWidth, actualMazeHeight );
 
     var FloorMaterial = new THREE.MeshPhongMaterial( {
         color: 0xb0b0b0,
@@ -265,7 +293,7 @@ var Game = function(args)
     } );
 
     var Floor = new THREE.Mesh( MazePlane, FloorMaterial );
-    Floor.position.set( maze.width / 2 - 1 / 2, -1 / 2, maze.height / 2 - 1 / 2 );
+    Floor.position.set( maze.width, -1 / 2, maze.height );
     Floor.rotation.x = Math.TAU * 3 / 4;
     scene.add( Floor );
 
@@ -350,14 +378,20 @@ Game.prototype.update = function( delta )
 
     var dir = new THREE.Vector3( -1.0 * sTheta, 0, -1.0 * cTheta );
 
-    if ( InputManager.isKeyDown( 87 /*w*/ ) &&
+    if ( (
+            InputManager.isKeyDown( 87 /* w */ ) ||
+            InputManager.isKeyDown( 38 /* arrow key up */ )
+         ) &&
          !this.playerCollides( dir, MoveSpeed ))
     {
         // Move forward
         this.player.position.x += dir.x * MoveSpeed;
         this.player.position.z += dir.z * MoveSpeed;
     }
-    else if ( InputManager.isKeyDown( 83 /*s*/ ) &&
+    else if ( (
+            InputManager.isKeyDown( 83 /* s */ ) ||
+            InputManager.isKeyDown( 40 /* arrow key down */ )
+            ) &&
          !this.playerCollides( new THREE.Vector3( -dir.x, -dir.y, -dir.z ), MoveSpeed ))
     {
         // Move backward
@@ -368,14 +402,20 @@ Game.prototype.update = function( delta )
     var xProd = new THREE.Vector3();
     xProd.crossVectors( dir, new THREE.Vector3( 0, 1.0, 0 ) );
 
-    if ( InputManager.isKeyDown( 65 /*a*/ ) &&
+    if ( (
+            InputManager.isKeyDown( 65 /* a */ ) ||
+            InputManager.isKeyDown( 37 /* arrow key left */ )
+        ) &&
          !this.playerCollides(  new THREE.Vector3( -xProd.x, -xProd.y, -xProd.z ), MoveSpeed ) )
     {
         // Move left
         this.player.position.x -= xProd.x * MoveSpeed;
         this.player.position.z -= xProd.z * MoveSpeed;
     }
-    else if ( InputManager.isKeyDown( 68 /*d*/ ) &&
+    else if ( (
+            InputManager.isKeyDown( 68 /*d*/ ) || 
+            InputManager.isKeyDown( 39 /* arrow key right */ )
+              ) &&
               !this.playerCollides( xProd, MoveSpeed ) )
     {
         // Move right
