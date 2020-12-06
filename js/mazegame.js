@@ -288,6 +288,13 @@ Game.prototype.postXRInit = function() {
     
 };
 
+Game.prototype.onXRSessionChange = function( sessionType ) {
+    
+    // TODO
+    console.info( sessionType );
+    
+};
+
 Game.prototype.playerCollides = function( dir, amount )
 {
     var ray = new THREE.Raycaster( this.player.position, dir, 0, amount + 0.14 );

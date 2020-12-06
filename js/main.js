@@ -34,7 +34,7 @@ var postInit = function() {
             import("../lib/VRButton.js")
                 .then((module) => {
                     
-                    document.body.appendChild( module.VRButton.createButton( renderer ) );
+                    document.body.appendChild( module.VRButton.createButton( renderer, g.onXRSessionChange ) );
                     
                     renderer.xr.enabled = true;
                     //renderer.xr.setReferenceSpaceType( "unbounded" );
