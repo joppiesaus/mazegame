@@ -307,6 +307,25 @@ var Game = function(args)
     Floor.position.set( maze.width, -1 / 2, maze.height );
     Floor.rotation.x = Math.TAU * 3 / 4;
     scene.add( Floor );
+    
+    var OutsideFloorSize = Math.max( 50, actualMazeWidth, actualMazeHeight ) * 2;
+    
+    var OutsideFloorTexture = Asset.texture( "floor.gif" );
+    OutsideFloorTexture.wrapT = OutsideFloorTexture.wrapS = THREE.RepeatWrapping;
+    OutsideFloorTexture.repeat.set( OutsideFloorSize * 2, OutsideFloorSize * 2 );
+    
+    var OutsideFloor = new THREE.Mesh( 
+        new THREE.PlaneGeometry( OutsideFloorSize, OutsideFloorSize ),
+        new THREE.MeshBasicMaterial( {
+            map: OutsideFloorTexture,
+            color: 0x888888
+        } )
+    );
+
+    OutsideFloor.position.set(-1 / 2, -1 / 2 - 0.01, -1 / 2);
+    OutsideFloor.rotation.x = Math.TAU * 3 / 4; // rotate floor to make it a floor and not a wall
+    
+    scene.add( OutsideFloor );
 
 };
 
