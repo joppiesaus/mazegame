@@ -37,7 +37,7 @@ var Game = function(args)
     var mazeWalls = [];
 
 
-    TorchBuilder.init();
+    var torchBuilder = new TorchBuilder();
 
     // Gaps
     var walls = [];
@@ -258,15 +258,15 @@ var Game = function(args)
 
                 // There's always a possibility, no need to check
                 // TODO: torch optimizing(render distance)
-                TorchBuilder.addTorch( new THREE.Vector3( x, 0, y ), DirectionToAngle( options.randomElement() ) );
+                torchBuilder.addTorch( new THREE.Vector3( x, 0, y ), DirectionToAngle( options.randomElement() ) );
             }
         }
     }
 
     // Place a torch at the entrance of the maze
-    TorchBuilder.addTorch( new THREE.Vector3( -1, 0, 0 ), DirectionToAngle( Direction.East ) );
+    torchBuilder.addTorch( new THREE.Vector3( -1, 0, 0 ), DirectionToAngle( Direction.East ) );
     
-    TorchBuilder.finish();
+    torchBuilder.finish();
 
     // TODO: Performance. Maybe chunks? Maybe different algorithm?
     mazeWalls.push( mazeMesh );
