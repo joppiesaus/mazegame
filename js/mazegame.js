@@ -258,13 +258,15 @@ var Game = function(args)
 
                 // There's always a possibility, no need to check
                 // TODO: torch optimizing(render distance)
-                new Torch( new THREE.Vector3( x, 0, y ), DirectionToAngle( options.randomElement() ) );
+                TorchBuilder.addTorch( new THREE.Vector3( x, 0, y ), DirectionToAngle( options.randomElement() ) );
             }
         }
     }
 
     // Place a torch at the entrance of the maze
-    new Torch( -1, 0, 0, DirectionToAngle( Direction.East ) );
+    TorchBuilder.addTorch( new THREE.Vector3( -1, 0, 0 ), DirectionToAngle( Direction.East ) );
+    
+    TorchBuilder.finish();
 
     // TODO: Performance. Maybe chunks? Maybe different algorithm?
     mazeWalls.push( mazeMesh );

@@ -1,16 +1,36 @@
 var TorchBuilder =
 {
-    mesh: null,
+    torchMesh: null,
     light: null,
+    torches: [],
 
-    init: function()
-    {
-        // Too much hard-coded. It depends on the cube sizes, too.
+    init: function() {
+        
+        // TODO: Too much hard-coded. It depends on the wall sizes, too.
         var geometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
         var material = new THREE.MeshNormalMaterial();
 
-        this.mesh = new THREE.Mesh( geometry, material );
+        this.torchMesh = new THREE.Mesh( geometry, material );
         this.light = new THREE.PointLight( 0xFF6600, 1, 3 );
+        this.geometry = new THREE.Geometry();
+        
+    },
+    
+    addTorch: function( pos, angle ) {
+        
+        this.torches.push( new Torch( pos, angle ) );
+        
+    },
+    
+    finish: function() {
+        
+        var geom = new THREE.BufferGeometry().fromGeometry( this.geometry );
+        geom.computeBoundingSphere();
+        
+        var mesh = new THREE.Mesh( geom, this.torchMesh.material );
+        
+        scene.add( mesh );
+        
     },
 };
 
@@ -28,17 +48,19 @@ var Torch = function( pos, angle )
     torchPos.add( pos );
     lightPos.add( pos );
 
-    this.torch = TorchBuilder.mesh.clone();
-    this.torch.position.copy( torchPos );
-    this.torch.rotation.setFromVector3( rotationVec );
-    scene.add( this.torch );
+    var torch = TorchBuilder.torchMesh.clone();
+    torch.position.copy( torchPos );
+    torch.rotation.setFromVector3( rotationVec );
+
+    // to transform a matrix would be too complex, so I do this instead.
+    TorchBuilder.geometry.mergeMesh( torch );
 
     this.light = TorchBuilder.light.clone();
     this.light.position.copy( lightPos );
     scene.add( this.light );
 
-    /*var pointLightHelper = new THREE.PointLightHelper( this.light, 0.01 );
-    scene.add( pointLightHelper );*/
+    //var pointLightHelper = new THREE.PointLightHelper( this.light, 0.01 );
+    //scene.add( pointLightHelper );
 };
 
 /*Torch.prototype.update = function( delta )
