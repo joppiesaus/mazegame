@@ -258,7 +258,7 @@ var Game = function(args)
 
                 // There's always a possibility, no need to check
                 // TODO: torch optimizing(render distance)
-                new Torch( x, 0, y, DirectionToAngle( options.randomElement() ) );
+                new Torch( new THREE.Vector3( x, 0, y ), DirectionToAngle( options.randomElement() ) );
             }
         }
     }

@@ -15,20 +15,18 @@ var TorchBuilder =
 };
 
 // A torch!
-var Torch = function( x, y, z, angle )
+var Torch = function( pos, angle )
 {
     var torchPos = new THREE.Vector3( 0.45, 0.18, 0 );
     var lightPos = new THREE.Vector3( 0.37, 0.18 + 0.2, 0 );
     var rotationVec = new THREE.Vector3( 0, 0, 0.39 );
 
-    var realPos = new THREE.Vector3( x, y, z );
-
     torchPos.rotateToY( angle );
     lightPos.rotateToY( angle );
     rotationVec.rotateY( angle );
 
-    torchPos.add( realPos );
-    lightPos.add( realPos );
+    torchPos.add( pos );
+    lightPos.add( pos );
 
     this.torch = TorchBuilder.mesh.clone();
     this.torch.position.copy( torchPos );
