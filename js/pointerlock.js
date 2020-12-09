@@ -56,7 +56,8 @@ var requestPointerLock = function()
 
     	var pointerlockerror = function( event )
         {
-            console.alert("Myseterious pointerlock error! :(");
+            console.warn("Mysterious pointerlock error! :(");
+            console.log( event );
             pointerLockActive = false;
     	};
 
