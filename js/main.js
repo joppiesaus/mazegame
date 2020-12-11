@@ -20,6 +20,38 @@ var init = function()
     document.body.appendChild(renderer.domElement);
 
     window.addEventListener( "resize", onWindowResize, false );
+    
+    
+    var urlParams = new URLSearchParams( window.location.search );
+    var dimensionString = urlParams.get( "dimensions" );
+    
+    var width = 8;
+    var height = 8;
+    
+    // Check if maze's dimensions have been specified in URL, if so apply them
+    if ( /\d+/.test( dimensionString ) ) {
+        
+        // width * height format (ex. ?dimensions="5x9")
+        if ( /\d+x\d+/.test( dimensionString ) ) {
+        
+            var arr = dimensionString.split( "x" );
+            
+            width = parseInt( arr[ 0 ] );
+            height = parseInt( arr[ 1 ] );
+            
+        } else {
+            
+            // single digit format, se it as width and height
+            
+            width = height = parseInt( dimensionString );
+            
+        }
+        
+    }
+    
+    
+    g = new Game( { width: width, height: height } ); // TODO: Make difficulty selection
+    
         
 };
 
@@ -87,7 +119,6 @@ var animate = function()
 
 
 init();
-g = new Game( { width: 8, height: 8 } ); // TODO: Make difficulty selection
 postInit();
 start();
 animate();
