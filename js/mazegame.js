@@ -1,5 +1,7 @@
 var Game = function(args)
 {
+    this.controllers = [];
+    
     this.hacks = !!args.hacks || false;
     this.player = { position: new THREE.Vector3( -1.5, 0.1, 1 ), theta: Math.PI * 1.5, phi: 0 };
 
@@ -34,6 +36,8 @@ var Game = function(args)
     this.player.update();
     
     scene.add( dolly );
+    
+    this.dolly = dolly;
 
     var maze = generateMaze( args.width, args.height );
     var mazeWalls = [];
@@ -328,6 +332,8 @@ var Game = function(args)
     OutsideFloor.rotation.x = Math.TAU * 3 / 4; // rotate floor to make it a floor and not a wall
     
     scene.add( OutsideFloor );
+    
+    this.xrControls = new XRControls( this, [ mazeMesh, Floor, OutsideFloor ] );
 
 };
 
@@ -341,17 +347,30 @@ Game.prototype.postXRInit = function() {
     THREEx.FullScreen.bindKey( { charCode : 'f'.charCodeAt( 0 ) } );
 
     // init pointerlock
-    if ( requestPointerLock() )
-    {
+    if ( requestPointerLock() ) {
         new PointerLock();
     }
+    
+    // below code is for when WebXR is present
+    if ( !WEBXR_PRESENT ) {
+        return;
+    }
+    
+    // setup controllers
+    this.xrControls.init();
     
 };
 
 Game.prototype.onXRSessionChange = function( sessionType ) {
     
-    // TODO
     console.info( sessionType );
+    
+    // Lower the ground level for XR
+    if ( sessionType === "sessionStarted" ) {
+        
+        g.player.position.y = 0;
+        
+    }
     
 };
 
@@ -459,6 +478,8 @@ Game.prototype.update = function( delta )
         torch.update( delta );
     } );*/
     this.player.update();
+    
+    this.xrControls.update( delta );
 
     InputManager.update();
 };
