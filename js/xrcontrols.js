@@ -11,6 +11,7 @@ var XRControls = function( game, objectsToIntersectWith ) {
     
     this.objectsToIntersectWith = objectsToIntersectWith;
     
+    this.controllerToCheck = 0;
 };
 
 
@@ -130,30 +131,34 @@ XRControls.prototype.getIntersections = function( c, mesh  ) {
 
 XRControls.prototype.update = function( delta ) {
     
-    for ( var i = 0; i < this.activeControllers.length; i++ ) {
+    if ( this.activeControllers.length === 0 ) return;
+    
+    var c = this.activeControllers[ this.controllerToCheck ];
+    
+    var ints = this.getIntersections( c, this.objectsToIntersectWith );
+    
+    // If you update this condition, don't forget to update it as well in attemptTeleport()!
+    if ( ints.length === 0 || ints[ 0 ].distance < 0.25 ||
+        ints[ 0 ].object.uuid === this.objectsToIntersectWith[ 0 ].uuid ) {
         
-        var c = this.activeControllers[ i ];
+        // "disabled" state: no interesections, too close, or pointing at surface unable to tp on
         
-        var ints = this.getIntersections( c, this.objectsToIntersectWith );
+        c.children[ 1 ].scale.z = 0;
+        c.children[ 0 ].material.color.setHex( 0xffffff );
         
-        // If you update this condition, don't forget to update it as well in attemptTeleport()!
-        if ( ints.length === 0 || ints[ 0 ].distance < 0.25 ||
-            ints[ 0 ].object.uuid === this.objectsToIntersectWith[ 0 ].uuid ) {
-            
-            // "disabled" state: no interesections, too close, or pointing at surface unable to tp on
-            
-            c.children[ 1 ].scale.z = 0;
-            c.children[ 0 ].material.color.setHex( 0xffffff );
-            
-        } else {
-            
-            
-            // enabled state
+    } else {
         
-            c.children[ 1 ].scale.z = ints[ 0 ].distance;
-            c.children[ 0 ].material.color.setHex( 0x88ff88 );
-            
-        }
+        // enabled state
+    
+        c.children[ 1 ].scale.z = ints[ 0 ].distance;
+        c.children[ 0 ].material.color.setHex( 0x88ff88 );
+        
+    }
+    
+    // Don't check every controller on each frame, instead do just one, as the player won't notice anything and it is less expensive
+    if ( ++this.controllerToCheck >= this.activeControllers.length ) {
+        
+        this.controllerToCheck = 0;
         
     }
     
