@@ -1,12 +1,16 @@
 
 var TorchBuilder = function() {
     
+    this.initialTorchPos = new THREE.Vector3( 0.45 * SCALE.x, 0.18 * SCALE.y, 0 );
+    this.initialLightPos = new THREE.Vector3( 0.37 * SCALE.x, (0.18 + 0.2) * SCALE.y, 0 );
+    
+    
     // TODO: Too much hard-coded. It depends on the wall sizes, too.
-    var torchGeometry = new THREE.BoxGeometry( 0.07, 0.35, 0.07 );
+    var torchGeometry = new THREE.BoxGeometry( 0.07 * SCALE.x, 0.35 * SCALE.y, 0.07 * SCALE.z );
     var torchMaterial = new THREE.MeshNormalMaterial();
 
     this.torchMesh = new THREE.Mesh( torchGeometry, torchMaterial );
-    this.torchLight = new THREE.PointLight( 0xFF6600, 1, 3 );
+    this.torchLight = new THREE.PointLight( 0xFF6600, 1 * SCALE.average(), 3 * SCALE.average() );
     this.geometry = new THREE.Geometry();
     
     this.torches = [];
@@ -34,13 +38,15 @@ TorchBuilder.prototype.finish = function() {
 // A torch!
 var Torch = function( pos, angle, torchBuilder ) {
     
-    var torchPos = new THREE.Vector3( 0.45, 0.18, 0 );
-    var lightPos = new THREE.Vector3( 0.37, 0.18 + 0.2, 0 );
+    var torchPos = torchBuilder.initialTorchPos.clone();
+    var lightPos = torchBuilder.initialLightPos.clone();
     var rotationVec = new THREE.Vector3( 0, 0, 0.39 );
 
     torchPos.rotateToY( angle );
     lightPos.rotateToY( angle );
     rotationVec.rotateY( angle );
+    
+    pos.multiply( SCALE );
 
     torchPos.add( pos );
     lightPos.add( pos );

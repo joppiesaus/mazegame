@@ -32,6 +32,12 @@ THREE.Vector3.prototype.rotateY = function( theta )
     this.z = oz * c + ox * s;
 };
 
+// Gets the average of the vector's components.
+THREE.Vector3.prototype.average = function()
+{
+    return ( this.x + this.y + this.z ) / 3;
+};
+
 // Clamps rotation
 var rotclamp = function( r )
 {

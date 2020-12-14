@@ -1,16 +1,33 @@
+var SCALE = new THREE.Vector3( 1, 1, 1 ); // TODO: Fix that SCALE.x needs to equal SCALE.z
+
 var Game = function(args)
 {
     this.controllers = [];
     
+    if ( args.scale ) {
+        
+        SCALE.copy( args.scale );
+        
+    }
+    
+    var avgScaleXZ = ( SCALE.x + SCALE.z ) / 2;
+    
     this.hacks = !!args.hacks || false;
-    this.player = { position: new THREE.Vector3( -1.5, 0.1, 1 ), theta: Math.PI * 1.5, phi: 0 };
+    this.player = {
+        position: new THREE.Vector3( -1.5, 0.1, 1 )
+            .multiply( SCALE ),
+        theta: Math.PI * 1.5,
+        phi: 0
+    };
+    
+    
 
     Asset.init();
 
     var light = new THREE.AmbientLight( 0x808080 );
     scene.add( light );
 
-    this.player.light = new THREE.PointLight( 0xF5D576, 0.5, 1.5899 );
+    this.player.light = new THREE.PointLight( 0xF5D576, 0.5 * SCALE.average(), 1.5899 * SCALE.average() );
     
     var dolly = new THREE.Group();
     
@@ -138,7 +155,7 @@ var Game = function(args)
     var tmpgeom = new THREE.Geometry();
     
     
-    var SingleWallGeom = new THREE.PlaneBufferGeometry( 1, 1 );
+    var SingleWallGeom = new THREE.PlaneBufferGeometry( 1 * SCALE.x, 1 * SCALE.y );
     var SingleWallGeomX = new THREE.Geometry().fromBufferGeometry(
             SingleWallGeom.clone()
                 .rotateY( Math.TAU / 4 )
@@ -180,9 +197,9 @@ var Game = function(args)
             if ( wall )
             {
                 matrix.makeTranslation(
-                    z - 1 / 2,
+                    z * SCALE.x - 1 / 2 * SCALE.x,
                     0,
-                    x
+                    x * SCALE.z // TODO: Check scale implementation
                 );
                 
                 tmpgeom.merge( 
@@ -202,9 +219,9 @@ var Game = function(args)
             if ( wall )
             {
                 matrix.makeTranslation(
-                    z,
+                    z * SCALE.x,
                     0,
-                    x - 1 / 2
+                    x * SCALE.z - 1 / 2 * SCALE.z // TODO: check scale
                 );
                 
                 tmpgeom.merge( 
@@ -222,7 +239,8 @@ var Game = function(args)
     var CubeBumpMap = Asset.texture( "bump.png" );
     CubeBumpMap.wrapT = CubeBumpMap.wrapS = THREE.RepeatWrapping;
     CubeBumpMap.offset.set( 0, 0 );
-    CubeBumpMap.repeat.set( 1, 1 ); // TODO: UV
+    CubeBumpMap.repeat.set( 1, 1 );
+    //CubeBumpMap.repeat.set( Math.floor( 1 * SCALE.x ), Math.floor( 1 * SCALE.y ) ); // TODO: UV
 
 
     var CubeMaterial = new THREE.MeshPhongMaterial( {
@@ -279,11 +297,11 @@ var Game = function(args)
     this.walls = mazeWalls;
 
     // I do not like this code
-    var MazePlane = new THREE.PlaneGeometry( actualMazeWidth, actualMazeHeight );
+    var MazePlane = new THREE.PlaneGeometry( actualMazeWidth * SCALE.x, actualMazeHeight * SCALE.z );
 
     var CeilingBumpMap = Asset.texture( "ceiling_bump.png" );
     CeilingBumpMap.wrapT = CeilingBumpMap.wrapS = THREE.RepeatWrapping;
-    CeilingBumpMap.repeat.set( actualMazeWidth, actualMazeHeight );
+    CeilingBumpMap.repeat.set( actualMazeWidth * SCALE.x, actualMazeHeight * SCALE.z );
 
     var CeilingMaterial = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
@@ -293,7 +311,7 @@ var Game = function(args)
     } );
 
     var Ceiling = new THREE.Mesh( MazePlane, CeilingMaterial );
-    Ceiling.position.set( maze.width, 1 / 2, maze.height );
+    Ceiling.position.set( maze.width, 1 / 2, maze.height ).multiply( SCALE );
     Ceiling.rotation.x = Math.TAU / 4;
     scene.add( Ceiling );
 
@@ -310,15 +328,15 @@ var Game = function(args)
     } );
 
     var Floor = new THREE.Mesh( MazePlane, FloorMaterial );
-    Floor.position.set( maze.width, -1 / 2, maze.height );
+    Floor.position.set( maze.width, -1 / 2, maze.height ).multiply( SCALE );
     Floor.rotation.x = Math.TAU * 3 / 4;
     scene.add( Floor );
     
-    var OutsideFloorSize = Math.max( 50, actualMazeWidth, actualMazeHeight ) * 2;
+    var OutsideFloorSize = Math.max( 50, actualMazeWidth, actualMazeHeight ) * 2 * avgScaleXZ;
     
     var OutsideFloorTexture = Asset.texture( "floor.gif" );
     OutsideFloorTexture.wrapT = OutsideFloorTexture.wrapS = THREE.RepeatWrapping;
-    OutsideFloorTexture.repeat.set( OutsideFloorSize * 2, OutsideFloorSize * 2 );
+    OutsideFloorTexture.repeat.set( Math.floor( OutsideFloorSize * 2 / SCALE.x ), Math.floor( OutsideFloorSize * 2 / SCALE.z ) );
     
     var OutsideFloor = new THREE.Mesh( 
         new THREE.PlaneGeometry( OutsideFloorSize, OutsideFloorSize ),
@@ -328,12 +346,14 @@ var Game = function(args)
         } )
     );
 
-    OutsideFloor.position.set(-1 / 2, -1 / 2 - 0.01, -1 / 2);
+    OutsideFloor.position.set(-1 / 2, -1 / 2 - 0.01, -1 / 2).multiply( SCALE );
     OutsideFloor.rotation.x = Math.TAU * 3 / 4; // rotate floor to make it a floor and not a wall
     
     scene.add( OutsideFloor );
     
     this.xrControls = new XRControls( this, [ mazeMesh, Floor, OutsideFloor ] );
+    
+    this.MOVESPEED = 1.5 * avgScaleXZ;
 
 };
 
@@ -368,6 +388,10 @@ Game.prototype.onXRSessionChange = function( sessionType ) {
     // Lower the ground level for XR
     if ( sessionType === "sessionStarted" ) {
         
+        g.player.position.y = ( -1 / 2 + 0.08 ) * SCALE.y;
+        
+    } else if ( sessionType === "sessionEnded" ) {
+        
         g.player.position.y = 0;
         
     }
@@ -385,7 +409,7 @@ Game.prototype.playerCollides = function( dir, amount )
 
 Game.prototype.update = function( delta )
 {
-    var MoveSpeed = 1.5 * delta;
+    var MoveSpeed = this.MOVESPEED * delta;
     var KeyRotateSpeed = 1.4 * delta;
 
     // debux hax
