@@ -10,6 +10,20 @@
 </head>
 <body>
 
+    <script>
+    // Hack so that VR browsers automatically redirect to HTTPS
+    try {
+
+        if ( "xr" in navigator &&
+             window.location.protocol == "http:" &&
+             window.location.toString().includes( "github.io" )
+           ) {
+
+            window.location = "https" + window.location.toString().substring( 4 );
+        }
+    } catch (e) {}
+    </script>
+
     <script src="lib/mazegen.js"></script>
     <script src="lib/tools.js"></script>
     <script src="lib/three.min.js"></script>
