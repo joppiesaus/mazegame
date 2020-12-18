@@ -155,7 +155,7 @@ var Game = function(args)
     var tmpgeom = new THREE.Geometry();
     
     
-    var SingleWallGeom = new THREE.PlaneBufferGeometry( 1 * SCALE.x, 1 * SCALE.y );
+    var SingleWallGeom = new THREE.PlaneBufferGeometry( 1, 1 );
     var SingleWallGeomX = new THREE.Geometry().fromBufferGeometry(
             SingleWallGeom.clone()
                 .rotateY( Math.TAU / 4 )
@@ -197,9 +197,9 @@ var Game = function(args)
             if ( wall )
             {
                 matrix.makeTranslation(
-                    z * SCALE.x - 1 / 2 * SCALE.x,
+                    z - 1 / 2,
                     0,
-                    x * SCALE.z // TODO: Check scale implementation
+                    x
                 );
                 
                 tmpgeom.merge( 
@@ -219,9 +219,9 @@ var Game = function(args)
             if ( wall )
             {
                 matrix.makeTranslation(
-                    z * SCALE.x,
+                    z,
                     0,
-                    x * SCALE.z - 1 / 2 * SCALE.z // TODO: check scale
+                    x - 1 / 2
                 );
                 
                 tmpgeom.merge( 
@@ -232,6 +232,7 @@ var Game = function(args)
         }
     }
 
+    tmpgeom.scale( SCALE.x, SCALE.y, SCALE.z );
     var mazeGeom = new THREE.BufferGeometry().fromGeometry( tmpgeom );
     mazeGeom.computeBoundingSphere();
 
