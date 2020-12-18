@@ -16,7 +16,7 @@
 
         if ( "xr" in navigator &&
              window.location.protocol == "http:" &&
-             window.location.toString().includes( "github.io" )
+             window.location.host.includes( "github.io" )
            ) {
 
             window.location = "https" + window.location.toString().substring( 4 );
